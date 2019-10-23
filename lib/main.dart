@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:fluttersocket/wave_widget.dart';
+import 'package:flutter/services.dart';
 
 import 'chat_page.dart';
 import 'utils/colors.dart';
@@ -25,8 +27,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+int _timer = 0;
+static const stream =
+    const EventChannel('com.yellowmessenger.bot/stream');
+
+StreamSubscription _timerSubscription = null;
+
+void _enableTimer() {
+  if (_timerSubscription == null) {
+    _timerSubscription = stream.receiveBroadcastStream().listen(_updateTimer);
+  }
+}
+
+void _disableTimer() {
+  if (_timerSubscription != null) {
+    _timerSubscription.cancel();
+    _timerSubscription = null;
+  }
+}
+void _updateTimer(timer) {
+  debugPrint("Timer $timer");
+  setState(() => _timer = timer);
+}
   @override
   Widget build(BuildContext context) {
+    _enableTimer();
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final logoHeight = screenHeight * 0.5;
@@ -61,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 HeaderPanel(),
                 Reply(),
+                Text(_timer.toString(),style: TextStyle(fontSize: 40),),
               ],
             ),
           ),
@@ -342,3 +368,5 @@ class SlideBottomRoute extends PageRouteBuilder {
           ),
         );
 }
+
+
